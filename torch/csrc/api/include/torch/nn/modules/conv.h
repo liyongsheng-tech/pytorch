@@ -1,8 +1,11 @@
 #pragma once
 
+#include <torch/detail/static.h>
 #include <torch/expanding_array.h>
 #include <torch/nn/cloneable.h>
 #include <torch/nn/init.h>
+#include <torch/nn/modules/common.h>
+#include <torch/nn/modules/container/any_value.h>
 #include <torch/nn/options/conv.h>
 #include <torch/nn/pimpl.h>
 #include <torch/types.h>
@@ -235,6 +238,11 @@ class TORCH_API ConvTranspose1dImpl : public ConvTransposeImpl<1, ConvTranspose1
   explicit ConvTranspose1dImpl(ConvTransposeOptions<1> options_);
   Tensor forward(const Tensor& input,
                  const c10::optional<at::IntArrayRef>& output_size = c10::nullopt);
+  FORWARD_HAS_DEFAULT_ARGS(
+    torch::OrderedDict<unsigned int, AnyValue>({
+      {1, AnyValue(c10::optional<at::IntArrayRef>())}
+    })
+  )
 };
 
 TORCH_MODULE(ConvTranspose1d);
@@ -255,6 +263,11 @@ class TORCH_API ConvTranspose2dImpl : public ConvTransposeImpl<2, ConvTranspose2
   explicit ConvTranspose2dImpl(ConvTransposeOptions<2> options_);
   Tensor forward(const Tensor& input,
                  const c10::optional<at::IntArrayRef>& output_size = c10::nullopt);
+  FORWARD_HAS_DEFAULT_ARGS(
+    torch::OrderedDict<unsigned int, AnyValue>({
+      {1, AnyValue(c10::optional<at::IntArrayRef>())}
+    })
+  )
 };
 
 TORCH_MODULE(ConvTranspose2d);
@@ -272,9 +285,17 @@ class TORCH_API ConvTranspose3dImpl : public ConvTransposeImpl<3, ConvTranspose3
       ExpandingArray<3> kernel_size)
       : ConvTranspose3dImpl(ConvTransposeOptions<3>(input_channels, output_channels, kernel_size)) {
   }
+
   explicit ConvTranspose3dImpl(ConvTransposeOptions<3> options_);
+
   Tensor forward(const Tensor& input,
                  const c10::optional<at::IntArrayRef>& output_size = c10::nullopt);
+  // yf225 TODO: can we do a nested macro to hide make_pair and AnyValue??
+  FORWARD_HAS_DEFAULT_ARGS(
+    torch::OrderedDict<unsigned int, AnyValue>({
+      {1, AnyValue(c10::optional<at::IntArrayRef>())}
+    })
+  )
 };
 
 TORCH_MODULE(ConvTranspose3d);

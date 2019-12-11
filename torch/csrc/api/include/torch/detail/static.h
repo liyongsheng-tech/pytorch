@@ -61,5 +61,6 @@ using is_module =
 template <typename M, typename T = void>
 using enable_if_module_t =
     typename std::enable_if<is_module<M>::value, T>::type;
+
 } // namespace detail
 } // namespace torch

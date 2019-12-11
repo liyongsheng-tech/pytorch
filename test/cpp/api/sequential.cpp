@@ -436,3 +436,73 @@ TEST_F(SequentialTest, PrettyPrintSequential) {
       "  (lstm): torch::nn::LSTM(input_size=4, hidden_size=5, layers=1, dropout=0)\n"
       ")");
 }
+
+TEST_F(SequentialTest, ModuleForwardMethodOptionalArg) {
+  {
+    Sequential sequential(ConvTranspose1d(ConvTranspose1dOptions(3, 2, 3).stride(1).bias(false)));
+    std::dynamic_pointer_cast<ConvTranspose1dImpl>(sequential[0])->weight.set_data(torch::arange(18.).reshape({3, 2, 3}));
+    auto x = torch::arange(30.).reshape({2, 3, 5});
+    auto y = sequential->forward(x);
+    auto expected = torch::tensor({{{ 150.,  333.,  552.,  615.,  678.,  501.,  276.},
+                                    { 195.,  432.,  714.,  804.,  894.,  654.,  357.}},
+                                   {{ 420.,  918., 1497., 1560., 1623., 1176.,  636.},
+                                    { 600., 1287., 2064., 2154., 2244., 1599.,  852.}}});
+    ASSERT_TRUE(torch::allclose(y, expected));
+  }
+  {
+    Sequential sequential(ConvTranspose2d(ConvTranspose2dOptions(3, 2, 3).stride(1).bias(false)));
+    std::dynamic_pointer_cast<ConvTranspose2dImpl>(sequential[0])->weight.set_data(torch::arange(54.).reshape({3, 2, 3, 3}));
+    auto x = torch::arange(75.).reshape({1, 3, 5, 5});
+    auto y = sequential->forward(x);
+    auto expected = torch::tensor({{{{ 2250.,  4629.,  7140.,  7311.,  7482.,  5133.,  2640.},
+                                     { 4995., 10272., 15837., 16206., 16575., 11364.,  5841.},
+                                     { 8280., 17019., 26226., 26820., 27414., 18783.,  9648.},
+                                     { 9225., 18954., 29196., 29790., 30384., 20808., 10683.},
+                                     {10170., 20889., 32166., 32760., 33354., 22833., 11718.},
+                                     { 7515., 15420., 23721., 24144., 24567., 16800.,  8613.},
+                                     { 4140.,  8487., 13044., 13269., 13494.,  9219.,  4722.}},
+                                    {{ 2925.,  6006.,  9246.,  9498.,  9750.,  6672.,  3423.},
+                                     { 6480., 13296., 20454., 20985., 21516., 14712.,  7542.},
+                                     {10710., 21960., 33759., 34596., 35433., 24210., 12402.},
+                                     {12060., 24705., 37944., 38781., 39618., 27045., 13842.},
+                                     {13410., 27450., 42129., 42966., 43803., 29880., 15282.},
+                                     { 9810., 20064., 30768., 31353., 31938., 21768., 11124.},
+                                     { 5355., 10944., 16770., 17076., 17382., 11838.,  6045.}}}});
+    ASSERT_TRUE(torch::allclose(y, expected));
+  }
+  {
+    Sequential sequential(ConvTranspose3d(ConvTranspose3dOptions(2, 2, 2).stride(1).bias(false)));
+    std::dynamic_pointer_cast<ConvTranspose3dImpl>(sequential[0])->weight.set_data(torch::arange(32.).reshape({2, 2, 2, 2, 2}));
+    auto x = torch::arange(16.).reshape({1, 2, 2, 2, 2});
+    auto y = sequential->forward(x);
+    auto expected = torch::tensor({{{{{ 128.,  280.,  154.},
+                                      { 304.,  664.,  364.},
+                                      { 184.,  400.,  218.}},
+                                     {{ 352.,  768.,  420.},
+                                      { 832., 1808.,  984.},
+                                      { 496., 1072.,  580.}},
+                                     {{ 256.,  552.,  298.},
+                                      { 592., 1272.,  684.},
+                                      { 344.,  736.,  394.}}},
+                                    {{{ 192.,  424.,  234.},
+                                      { 464., 1016.,  556.},
+                                      { 280.,  608.,  330.}},
+                                     {{ 544., 1184.,  644.},
+                                      {1280., 2768., 1496.},
+                                      { 752., 1616.,  868.}},
+                                     {{ 384.,  824.,  442.},
+                                      { 880., 1880., 1004.},
+                                      { 504., 1072.,  570.}}}}});
+    ASSERT_TRUE(torch::allclose(y, expected));
+  }
+  {
+    auto weight = torch::tensor({{1., 2.3, 3.}, {4., 5.1, 6.3}});
+    Sequential sequential(EmbeddingBag::from_pretrained(weight));
+    auto x = torch::tensor({{1, 0}}, torch::kLong);
+    auto y = sequential->forward(x);
+    auto expected = torch::tensor({2.5000, 3.7000, 4.6500});
+    ASSERT_TRUE(torch::allclose(y, expected));
+  }
+
+  // yf225 TODO: change other modules that have default arguments in forward method as well
+}

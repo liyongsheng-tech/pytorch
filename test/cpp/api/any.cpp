@@ -101,6 +101,8 @@ TEST_F(AnyModuleTest, WrongNumberOfArguments) {
   ASSERT_THROWS_WITH(
       any.forward(1, 2, 3),
       "M's forward() method expects 2 arguments, but received 3");
+
+  // yf225 TODO: add test for forward method with default arguments
 }
 
 struct M : torch::nn::Module {
@@ -247,17 +249,17 @@ TEST_F(AnyModuleTest, ConvertsVariableToTensorCorrectly) {
 
 namespace torch {
 namespace nn {
-struct TestValue {
+struct TestAnyValue {
   template <typename T>
-  explicit TestValue(T&& value) : value_(std::forward<T>(value)) {}
-  AnyModule::Value operator()() {
+  explicit TestAnyValue(T&& value) : value_(std::forward<T>(value)) {}
+  AnyValue operator()() {
     return std::move(value_);
   }
-  AnyModule::Value value_;
+  AnyValue value_;
 };
 template <typename T>
-AnyModule::Value make_value(T&& value) {
-  return TestValue(std::forward<T>(value))();
+AnyValue make_value(T&& value) {
+  return TestAnyValue(std::forward<T>(value))();
 }
 } // namespace nn
 } // namespace torch
