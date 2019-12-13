@@ -2469,6 +2469,7 @@ class DistributedDataParallelTest(MultiProcessTestCase):
                 return (F.softmax(x, dim=1), self.fc3)
 
         device_id = gpus_for_rank(self.world_size)[self.rank][0]
+        torch.cuda.set_device(device_id)
         batch_size = 4
         criterion = nn.CrossEntropyLoss()
         input = torch.rand([batch_size, 2], dtype=torch.float)

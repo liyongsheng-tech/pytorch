@@ -1846,6 +1846,7 @@ class _DistTestBase(object):
         group, group_id, rank = self._init_global_test()
         rank_to_GPU = self._init_multigpu_helper()
         gpus = list(rank_to_GPU[rank])
+        torch.cuda.set_device(gpus[0])
         self._test_DistributedDataParallel(gpu_subset=gpus, rank=rank)
 
         # test output_device
@@ -1907,6 +1908,7 @@ class _DistTestBase(object):
         # DDP does not support replicating BN layers within a process, hence
         # testing with one module replica per process
         gpus = [rank]
+        torch.cuda.set_device(rank)
         self._test_DistributedDataParallel_SyncBatchNorm(gpu_subset=gpus, rank=rank)
 
         # test output_device
@@ -1926,6 +1928,7 @@ class _DistTestBase(object):
         # DDP does not support replicating BN layers within a process, hence
         # testing with one module replica per process
         gpus = [rank]
+        torch.cuda.set_device(rank)
 
         model = nn.BatchNorm1d(2)
 
@@ -1971,6 +1974,7 @@ class _DistTestBase(object):
     def test_DistributedDataParallel_SyncBatchNorm_Diff_Input_Sizes_Running_Value(self):
         group, group_id, rank = self._init_global_test()
         rank_to_GPU = self._init_multigpu_helper()
+        torch.cuda.set_device(rank)
         model = nn.parallel.DistributedDataParallel(ONLY_SBN_NET.cuda(rank), device_ids=[rank])
 
         input_var = []
